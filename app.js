@@ -6,9 +6,14 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const hbs = require('hbs');
+/* requires para implementar cookies y sessions */
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
+/* */
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
 
 const app = express();
 
@@ -18,6 +23,27 @@ mongoose.connect('mongodb://localhost/expressAuthentication', {
   keepAlive: true,
   useNewUrlParser: true,
   reconnectTries: Number.MAX_VALUE
+});
+
+// check si hay cookies en la request y si no hay la añade
+
+app.use(session({
+  store: new MongoStore({ // guarda la sesión
+    mongooseConnection: mongoose.connection,
+    ttl: 24 * 60 * 60 // 1 day
+  }),
+  secret: 'some-string', // esto no se tiene k subir a githab, tiene que ser secreto
+  resave: true,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true, // restringe el acceso a la cookie solo al http. Sin esto, podríams acceder desde Js, y sería más vulnerable.
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
+  }
+}));
+
+app.use((req, res, next) => {
+  app.locals.currentUser = req.session.currentUser;
+  next();
 });
 
 // view engine setup
@@ -33,6 +59,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/auth', authRouter);
 
 // -- 404 and error handler
 
