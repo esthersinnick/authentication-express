@@ -17,7 +17,11 @@ const isNotLoggedIn = (req, res, next) => {
 const isFormFilled = (req, res, next) => {
   const { username, password } = req.body;
   if (!username || !password) {
-    return res.redirect(req.path); // req.path hace referencia a la ruta desde la que se ha hecho la request
+    req.flash('errorFormNotFilled', 'All fields are required'); // creamos un mensaje de error para cuando falte rellenar un campo del form
+    if (username) {
+      req.flash('usernameRecover', username);
+    }
+    return res.redirect(req.originalUrl); // req.originalUrl hace referencia a la ruta desde la que se ha hecho la request. HAcemos que se mantenga en esa página, tanto si está en login como si está en signup
   }
   next();
 };

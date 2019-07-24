@@ -11,7 +11,11 @@ const router = express.Router();
 
 /* GET home page. */
 router.get('/signup', isLoggedIn, (req, res, next) => { // renderiza el formulario de sign up
-  res.render('signup');
+  const data = {
+    messages: req.flash('errorFormNotFilled'), // req.flash siempre devuelve un array, aunque solo haya un mensaje.
+    username: req.flash('usernameRecover')
+  };
+  res.render('signup', data);
 });
 
 router.post('/signup', isLoggedIn, isFormFilled, async (req, res, next) => { // hace la acción del botón de signup

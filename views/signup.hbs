@@ -1,7 +1,17 @@
 <form action="/auth/signup" method ="POST">
   <label for="username">Username</label>
+  {{#if username.length}}
+  <input type="text" name="username" id="username" required value= "{{username.[0]}}" placeholder="Username">
+  {{else}}
   <input type="text" name="username" id="username" required placeholder="Username">
+  {{/if}}
   <label for="password">Password</label>
   <input type="password" name="password" id="password" required placeholder="Password">
   <button type="submit">Sign Up</button>
 </form>
+
+{{#if messages.length}}
+<ul class="validation">
+  {{#each messages}}<li>{{this}}</li>{{/each}}
+</ul>
+{{/if}}

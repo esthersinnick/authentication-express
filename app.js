@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const hbs = require('hbs');
+const flash = require('connect-flash');
 /* requires para implementar cookies y sessions */
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
@@ -14,11 +15,12 @@ const MongoStore = require('connect-mongo')(session);
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
+const recipesRouter = require('./routes/recipes');
+const apiRouter = require('./routes/api');
 
 const app = express();
 
-// mongoose setup
-
+// mongoose setup (viene de la boilerplate m2/express-apps/mongoose-connect.js)
 mongoose.connect('mongodb://localhost/expressAuthentication', {
   keepAlive: true,
   useNewUrlParser: true,
@@ -26,7 +28,6 @@ mongoose.connect('mongodb://localhost/expressAuthentication', {
 });
 
 // check si hay cookies en la request y si no hay la añade
-
 app.use(session({
   store: new MongoStore({ // guarda la sesión
     mongooseConnection: mongoose.connection,
@@ -40,6 +41,9 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
 }));
+//
+/* Empezamos a usar flash. Tiene que ir después de la sesión */
+app.use(flash());
 
 app.use((req, res, next) => {
   app.locals.currentUser = req.session.currentUser;
@@ -60,9 +64,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
+app.use('/recipes', recipesRouter);
+app.use('/api', apiRouter);
 
 // -- 404 and error handler
-
 app.use((req, res, next) => {
   res.status(404);
   res.render('not-found');
